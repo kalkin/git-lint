@@ -163,6 +163,10 @@ def parse_yaml_config(yaml_config, repo_home):
         for extension in data['extensions']:
             config[extension].append(linter_command)
 
+        if 'shellbang' in data:
+            for shellbang in data['shellbang']:
+                config[shellbang].append(linter_command)
+
     return config
 
 
@@ -182,6 +186,9 @@ def lint(filename, lines, config):
       'comments' will have the messages.
     """
     _, ext = os.path.splitext(filename)
+    if ext not in config:
+        with open(filename, 'r') as f:
+            ext = f.readline()[2:].strip()
     if ext in config:
         output = collections.defaultdict(list)
         for linter in config[ext]:

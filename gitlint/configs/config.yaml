@@ -103,6 +103,8 @@ pylint:
 pep8:
   extensions:
   - .py
+  shellbang:
+  - /usr/bin/env python
   command: pep8
   arguments:
   - "--max-line-length=80"
