@@ -247,6 +247,10 @@ def main(argv, stdout=sys.stdout, stderr=sys.stderr):
                 processfile, [(filename, modified_files[filename])
                               for filename in sorted(modified_files.keys())]):
 
+            # If git gave us a dir, then it's a submodule
+            if os.path.isdir(filename):
+                continue
+
             rel_filename = os.path.relpath(filename)
 
             if not json_output:
