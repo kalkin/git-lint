@@ -461,8 +461,8 @@ class GitLintTest(fake_filesystem_unittest.TestCase):
         self.fs.create_file(
             os.path.join(self.root, '.gitlint.yaml'), contents=config)
         parsed_config = gitlint.get_config(self.root)
-        self.assertEqual(['.py'], list(parsed_config.keys()))
-        self.assertEqual(1, len(parsed_config['.py']))
+        self.assertEqual(['.py'], list(parsed_config['extensions'].keys()))
+        self.assertEqual(1, len(parsed_config['extensions']['.py']))
 
     def test_get_config_from_default(self):
         parsed_config = gitlint.get_config(self.root)
@@ -478,7 +478,8 @@ class GitLintTest(fake_filesystem_unittest.TestCase):
         self.fs.create_file(os.path.join(self.root, '.gitlint.yaml'))
         # When config file is empty return an empty dictionary.
         parsed_config = gitlint.get_config(self.root)
-        self.assertEqual({}, parsed_config)
+        self.assertEqual({}, parsed_config['extensions'])
+        self.assertEqual({}, parsed_config['shellbangs'])
 
     def test_format_comment(self):
         self.assertEqual('', gitlint.format_comment({}))

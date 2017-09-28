@@ -130,7 +130,10 @@ def _replace_variables(data, variables):
 # TODO(skreft): validate data['filter'], ie check that only has valid fields.
 def parse_yaml_config(yaml_config, repo_home):
     """Converts a dictionary (parsed Yaml) to the internal representation."""
-    config = collections.defaultdict(list)
+    config = {
+        'extensions': collections.defaultdict(list),
+        'shellbangs': collections.defaultdict(list)
+    }
 
     variables = {
         'DEFAULT_CONFIGS': os.path.join(os.path.dirname(__file__), 'configs'),
@@ -152,11 +155,11 @@ def parse_yaml_config(yaml_config, repo_home):
             linter_command = Partial(lint_command, name, command, arguments,
                                      data['filter'])
         for extension in data['extensions']:
-            config[extension].append(linter_command)
+            config['extensions'][extension].append(linter_command)
 
         if 'shellbang' in data:
             for shellbang in data['shellbang']:
-                config[shellbang].append(linter_command)
+                config['shellbangs'][shellbang].append(linter_command)
 
     return config
 
@@ -177,12 +180,24 @@ def lint(filename, lines, config):
       'comments' will have the messages.
     """
     _, ext = os.path.splitext(filename)
-    if ext not in config:
+    linters = []
+    if 'extensions' in config and ext in config['extensions']:
+        linters = config['extensions'][ext]
+    elif 'shellbangs' in config:
         with open(filename, 'r') as f:
-            ext = f.readline()[2:].strip()
-    if ext in config:
+            first_line = f.readline()
+            if first_line and 'shellbangs' in config:
+                # 2x strip() to handle the following cases:
+                # - '#! /bin/sh'
+                # - ' #!/bin/sh'
+                # - ' #! /bin/sh'
+                shellbang = first_line.strip()[2:].strip()
+                if shellbang in config['shellbangs']:
+                    linters = config['shellbangs'][shellbang]
+
+    if linters:
         output = collections.defaultdict(list)
-        for linter in config[ext]:
+        for linter in linters:
             linter_output = linter(filename, lines)
             for category, values in linter_output[filename].items():
                 output[category].extend(values)
@@ -193,12 +208,11 @@ def lint(filename, lines, config):
                 key=lambda x: (x.get('line', -1), x.get('column', -1)))
 
         return {filename: dict(output)}
-    else:
-        return {
-            filename: {
-                'skipped': [
-                    'no linter is defined or enabled for files'
-                    ' with extension "%s"' % ext
-                ]
-            }
+    return {
+        filename: {
+            'skipped': [
+                'no linter is defined or enabled for files'
+                ' with extension "%s"' % ext
+            ]
         }
+    }
