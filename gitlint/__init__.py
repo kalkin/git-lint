@@ -218,6 +218,8 @@ def main(argv, stdout=sys.stdout, stderr=sys.stderr):
     json_result = {}
 
     for filename in sorted(modified_files.keys()):
+        if os.path.isdir(filename):
+            continue
         rel_filename = os.path.relpath(filename)
         if not json_output:
             stdout.write('Linting file: %s%s' %
