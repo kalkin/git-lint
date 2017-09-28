@@ -134,6 +134,8 @@ pycodestyle:
   extensions:
     - .py
   command: pycodestyle
+  shellbang:
+    - /usr/bin/env python
   arguments:
     - "--max-line-length=80"
   filter: >-
