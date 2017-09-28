@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 import functools
 import os
 import subprocess
+import sys
 import unittest
 
 import mock
@@ -226,9 +227,7 @@ class LintersTest(unittest.TestCase):
             'l2',
             'linter2', [],
             '^ line (?P<line>{lines}): (?P<message>.*)$')
-        config = {
-            '.txt': [linter1, linter2]
-        }
+        config = {'extensions': {'.txt': [linter1, linter2]}}
         outputs = [os.linesep.join(['Line 1: 1', 'Line 5: 5']).encode('utf-8'),
                    os.linesep.join([' line 4: 4']).encode('utf-8')]
         with mock.patch('subprocess.check_output',
@@ -278,9 +277,7 @@ class LintersTest(unittest.TestCase):
             'l4',
             'linter4', [],
             r'^(?P<line>{lines}):(?P<column>\d+): (?P<message>.*)$')
-        config = {
-            '.txt': [linter1, linter2, linter3, linter4]
-        }
+        config = {'extensions': {'.txt': [linter1, linter2, linter3, linter4]}}
         outputs = [
             os.linesep.join(['Line 5: 5', 'Line 1: 1']).encode('utf-8'),
             os.linesep.join([' line 4: 4']).encode('utf-8'),
@@ -337,9 +334,7 @@ class LintersTest(unittest.TestCase):
             'linter2',
             [],
             '^ line (?P<line>{lines}): (?P<message>.*)$')
-        config = {
-            '.txt': [linter1, linter2]
-        }
+        config = {'extensions': {'.txt': [linter1, linter2]}}
         outputs = [b'',
                    os.linesep.join([' line 4: 4']).encode('utf-8')]
         with mock.patch('subprocess.check_output',
@@ -369,9 +364,7 @@ class LintersTest(unittest.TestCase):
             linters.lint_command, 'l1', 'linter1', ['-f'], '^Line {lines}:')
         linter2 = functools.partial(
             linters.lint_command, 'l2', 'linter2', [], '^ line {lines}:')
-        config = {
-            '.txt': [linter1, linter2]
-        }
+        config = {'extensions': {'.txt': [linter1, linter2]}}
         outputs = [b'', b'']
         with mock.patch('subprocess.check_output',
                         side_effect=outputs) as check_output, \
@@ -390,8 +383,14 @@ class LintersTest(unittest.TestCase):
                 mock.call(['linter2', 'foo.txt'], stderr=subprocess.STDOUT)]
             self.assertEqual(expected_calls, check_output.call_args_list)
 
-    def test_lint_extension_not_defined(self):
-        config = {}
+    if sys.version_info.major == 3:
+        builtin_open = 'builtins.open'
+    else:
+        builtin_open = '__builtin__.open'
+
+    @mock.patch(builtin_open, new_callable=mock.mock_open, read_data='')
+    def test_lint_extension_not_defined(self, _):
+        config = {'extensions': {}}
         output = linters.lint('foo.txt', lines=[4, 5], config=config)
         self.assertEqual(1, len(output['foo.txt']['skipped']))
         output['foo.txt']['skipped'] = []
@@ -407,9 +406,7 @@ class LintersTest(unittest.TestCase):
         linter1 = functools.partial(
             linters.missing_requirements_command,
             'l1', ['p1', 'p2'], 'Install p1 and p2')
-        config = {
-            '.txt': [linter1]
-        }
+        config = {'extensions': {'.txt': [linter1]}}
         output = linters.lint('foo.txt', lines=[4, 5], config=config)
         self.assertEqual(1, len(output['foo.txt']['skipped']))
         output['foo.txt']['skipped'] = []
@@ -425,9 +422,7 @@ class LintersTest(unittest.TestCase):
         linter1 = functools.partial(
             linters.missing_requirements_command,
             'l1', ['p1', 'p2'], 'Install p1 and p2')
-        config = {
-            '.txt': [linter1, linter1]
-        }
+        config = {'extensions': {'.txt': [linter1, linter1]}}
         output = linters.lint('foo.txt', lines=[4, 5], config=config)
         self.assertEqual(2, len(output['foo.txt']['skipped']))
         output['foo.txt']['skipped'] = []
@@ -459,7 +454,7 @@ class LintersTest(unittest.TestCase):
                                 'name.com to install it.']
                 }
             },
-            config['.foo'][0]('filename', []))
+            config['extensions']['.foo'][0]('filename', []))
 
     def test_parse_yaml_config_requirements_not_in_path(self):
         yaml_config = {
@@ -486,7 +481,7 @@ class LintersTest(unittest.TestCase):
                                 'command_two']
                 }
             },
-            config['.foo'][0]('filename', []))
+            config['extensions']['.foo'][0]('filename', []))
 
     def test_parse_yaml_config_with_variables(self):
         yaml_config_with_vars = {

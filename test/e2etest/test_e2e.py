@@ -152,7 +152,8 @@ class E2EBase(object):
     @classmethod
     def add_linter_checks(cls):
         """Add a test for each defined linter and extension."""
-        for extension, linter_list in gitlint.get_config(None).items():
+        config = gitlint.get_config(None)
+        for extension, linter_list in config['extensions'].items():
             for linter in linter_list:
                 cls.add_linter_check(linter.args[0], extension)
 

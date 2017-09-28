@@ -495,8 +495,8 @@ class GitLintTest(unittest.TestCase):
                        create=True) as mock_open:
             parsed_config = gitlint.get_config(self.root)
             mock_open.assert_called_once_with(git_config)
-            self.assertEqual(['.py'], list(parsed_config.keys()))
-            self.assertEqual(1, len(parsed_config['.py']))
+            self.assertEqual(['.py'], list(parsed_config['extensions'].keys()))
+            self.assertEqual(1, len(parsed_config['extensions']['.py']))
 
     def test_get_config_from_default(self):
         with mock.patch('os.path.exists', return_value=False):
@@ -516,7 +516,8 @@ class GitLintTest(unittest.TestCase):
                        mock.mock_open(read_data=''),
                        create=True) as mock_open:
             parsed_config = gitlint.get_config(self.root)
-            self.assertEqual({}, parsed_config)
+            self.assertEqual({}, parsed_config['extensions'])
+            self.assertEqual({}, parsed_config['shellbangs'])
 
     def test_format_comment(self):
         self.assertEqual('', gitlint.format_comment({}))
