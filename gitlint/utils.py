@@ -13,7 +13,9 @@
 # limitations under the License.
 """Common function used across modules."""
 
+import hashlib
 import io
+import json
 import os
 import re
 
@@ -70,16 +72,18 @@ def _open_for_write(filename):
     return io.open(filename, 'w')
 
 
-def _get_cache_filename(name, filename):
+def _get_cache_filename(name, program, arguments, filename):
     """Returns the cache location for filename and linter name."""
-    filename = os.path.abspath(filename)[1:]
+    args = (name, program, arguments, filename)
+    json_data = json.dumps(args, sort_keys=True).encode()
+    hashed_name = hashlib.sha1(json_data).hexdigest()
     home_folder = os.path.expanduser('~')
     base_cache_dir = os.path.join(home_folder, '.git-lint', 'cache')
 
-    return os.path.join(base_cache_dir, name, filename)
+    return os.path.join(base_cache_dir, hashed_name)
 
 
-def get_output_from_cache(name, filename):
+def get_output_from_cache(name, program, arguments, filename):
     """Returns the output from the cache if still valid.
 
     It checks that the cache file is defined and that its modification time is
@@ -92,7 +96,7 @@ def get_output_from_cache(name, filename):
 
     Returns: a string with the output, if it is still valid, or None otherwise.
     """
-    cache_filename = _get_cache_filename(name, filename)
+    cache_filename = _get_cache_filename(name, program, arguments, filename)
     if (os.path.exists(cache_filename) and
             os.path.getmtime(filename) < os.path.getmtime(cache_filename)):
         with io.open(cache_filename) as f:
@@ -101,7 +105,7 @@ def get_output_from_cache(name, filename):
     return None
 
 
-def save_output_in_cache(name, filename, output):
+def save_output_in_cache(name, program, arguments, filename, output):
     """Saves output in the cache location.
 
     Args:
@@ -109,6 +113,6 @@ def save_output_in_cache(name, filename, output):
       filename: string: path of the filename for which we are saving the output.
       output: string: full output (not yet filetered) of the lint command.
     """
-    cache_filename = _get_cache_filename(name, filename)
+    cache_filename = _get_cache_filename(name, program, arguments, filename)
     with _open_for_write(cache_filename) as f:
         f.write(output)

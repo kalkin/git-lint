@@ -18,7 +18,13 @@ import mock
 
 import gitlint.utils as utils
 
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods,protected-access
+
+
+def _mock_abspath(filename):
+    if os.path.isabs(filename):
+        return filename
+    return '/foo/%s' % filename
 
 
 class UtilsTest(unittest.TestCase):
@@ -91,27 +97,21 @@ class UtilsTest(unittest.TestCase):
             mock_makedirs.assert_called_once_with(os.path.dirname(filename))
             mock_open.assert_called_once_with(filename, 'w')
 
-    def test_get_cache_filename(self):
-        def mock_abspath(filename):
-            if os.path.isabs(filename):
-                return filename
-            return '/foo/%s' % filename
+    @mock.patch('os.path.abspath', side_effect=_mock_abspath)
+    @mock.patch('os.path.expanduser', side_effect=lambda a: '/home/user')
+    def test_get_cache_filename(self, _, __):  # pylint: disable=invalid-name
+        # pylint: disable=line-too-long
+        self.assertEqual(
+            '/home/user/.git-lint/cache/e847a69549b9413ce543dfc2a08a26aa2fc76b41',
+            utils._get_cache_filename('linter1', 'lint1', {}, 'bar/file.txt'))
 
-        with mock.patch('os.path.abspath',
-                        side_effect=mock_abspath), \
-             mock.patch('os.path.expanduser',
-                        side_effect=lambda a: '/home/user'):
-            self.assertEqual(
-                '/home/user/.git-lint/cache/linter1/foo/bar/file.txt',
-                utils._get_cache_filename('linter1', 'bar/file.txt'))
+        self.assertEqual(
+            '/home/user/.git-lint/cache/71262e3079c8f3a3133f9bc5c0f4740bd3db3e2f',
+            utils._get_cache_filename('linter2', 'lint2', {}, 'file.txt'))
 
-            self.assertEqual(
-                '/home/user/.git-lint/cache/linter2/foo/file.txt',
-                utils._get_cache_filename('linter2', 'file.txt'))
-
-            self.assertEqual(
-                '/home/user/.git-lint/cache/linter3/bar/file.txt',
-                utils._get_cache_filename('linter3', '/bar/file.txt'))
+        self.assertEqual(
+            '/home/user/.git-lint/cache/466b0918b56b96a47446546e4cbe15019022666c',
+            utils._get_cache_filename('linter3', 'lint3', {}, '/bar/file.txt'))
 
     def test_save_output_in_cache(self):
         output = 'Some content'
@@ -121,7 +121,7 @@ class UtilsTest(unittest.TestCase):
                         return_value=cache_filename), \
              mock.patch('gitlint.utils._open_for_write',
                         mock.mock_open(mock_file)) as mock_open:
-            utils.save_output_in_cache('linter', 'filename', output)
+            utils.save_output_in_cache('linter', 'lint', {}, 'filename', output)
             mock_open.assert_called_once_with(cache_filename)
             mock_file().write.assert_called_once_with(output)
 
@@ -131,7 +131,7 @@ class UtilsTest(unittest.TestCase):
                         return_value=cache_filename), \
              mock.patch('os.path.exists', return_value=False):
             self.assertIsNone(
-                utils.get_output_from_cache('linter', 'filename'))
+                utils.get_output_from_cache('linter', 'lint', {}, 'filename'))
 
     def test_get_output_from_cache_cache_is_expired(self):
         cache_filename = '/cache/filename.txt'
@@ -140,7 +140,7 @@ class UtilsTest(unittest.TestCase):
              mock.patch('os.path.exists', return_value=True), \
              mock.patch('os.path.getmtime', side_effect=[2, 1]):
             self.assertIsNone(
-                utils.get_output_from_cache('linter', 'filename'))
+                utils.get_output_from_cache('linter', 'lint', {}, 'filename'))
 
     def test_get_output_from_cache_cache_is_valid(self):
         cache_filename = '/cache/filename.txt'
@@ -153,7 +153,8 @@ class UtilsTest(unittest.TestCase):
                         mock.mock_open(read_data=content),
                         create=True) as mock_open:
             self.assertEqual(
-                content, utils.get_output_from_cache('linter', 'filename'))
+                content, utils.get_output_from_cache('linter', 'lint', {},
+                                                     'filename'))
             mock_open.assert_called_once_with(cache_filename)
 
     def test_which_absolute_path(self):
