@@ -88,13 +88,24 @@ def find_invalid_filenames(filenames, repository_root):
 
 
 def get_config(repo_root):
-    """Gets the configuration file either from the repository or the default."""
-    config = os.path.join(os.path.dirname(__file__), 'configs', 'config.yaml')
-
+    """ Gets the configuration file either from the repository, the user
+        ``.gitlint`` directory or the default.
+    """
+    config = None
     if repo_root:
         repo_config = os.path.join(repo_root, '.gitlint.yaml')
         if os.path.exists(repo_config):
             config = repo_config
+
+    if not config:
+        home_folder = os.path.expanduser('~')
+        user_config = os.path.join(home_folder, '.git-lint', 'config.yaml')
+        if os.path.exists(user_config):
+            config = os.path.join(home_folder, '.git-lint', 'config.yaml')
+
+    if not config:
+        config = os.path.join(
+            os.path.dirname(__file__), 'configs', 'config.yaml')
 
     with open(config) as f:
         # We have to read the content first as yaml hangs up when reading from
