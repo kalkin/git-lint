@@ -113,6 +113,24 @@ class UtilsTest(unittest.TestCase):
             '/home/user/.git-lint/cache/466b0918b56b96a47446546e4cbe15019022666c',
             utils._get_cache_filename('linter3', 'lint3', {}, '/bar/file.txt'))
 
+    @mock.patch('os.path.abspath', side_effect=_mock_abspath)
+    @mock.patch('os.path.expanduser', side_effect=lambda a: '/home/user')
+    def test_cache_name_change(self, _, __):  # pylint: disable=invalid-name
+        """ Make sure file name changes when program name or arguments change
+        """
+        result1 = utils._get_cache_filename('linter', 'lint1', {}, 'file.txt')
+        result2 = utils._get_cache_filename('linter', 'lint2', {}, 'file.txt')
+        result3 = utils._get_cache_filename('linter', 'lint1', {
+            'args': [1, 2, 3]
+            }, 'file.txt')
+        result4 = utils._get_cache_filename('linter', 'lint2', {}, 'file.txt')
+
+        self.assertNotEqual(result1, result2)
+        self.assertNotEqual(result1, result3)
+        self.assertNotEqual(result2, result3)
+        self.assertEqual(result2, result4)
+
+
     def test_save_output_in_cache(self):
         output = 'Some content'
         cache_filename = '/cache/filename.txt'
