@@ -183,7 +183,11 @@ def lint(filename, lines, config):
       then a field 'skipped' will be set with the reasons. Otherwise, the field
       'comments' will have the messages.
     """
-    lang = FileBlob(filename).language
+    try:
+        lang = FileBlob(filename).language
+    except OSError:
+        return {filename: {'skipped': []}}
+
     if lang is None:
         return {
             filename: {
