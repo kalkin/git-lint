@@ -11,6 +11,7 @@ python:
   #- "pypy"
 # command to install dependencies
 install:
+  - sudo apt-get install libicu-dev libmagic-dev
   - "pip install ."
   - "pip install coveralls"
   - "bash scripts/install-linters.sh"
