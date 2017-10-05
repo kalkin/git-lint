@@ -126,6 +126,7 @@ class LintersTest(unittest.TestCase):
                 },
                 command(filename, lines=None))
 
+    @mock.patch('__main__.open', mock.mock_open(read_data='foo\nbar\nbaz\n'))
     def test_lint_command_error(self):
         output = os.linesep.join([
             'Line 1: 1',
@@ -190,6 +191,7 @@ class LintersTest(unittest.TestCase):
                           stderr=subprocess.STDOUT)]
             self.assertEqual(expected_calls, check_output.call_args_list)
 
+    @mock.patch('__main__.open', mock.mock_open(read_data='foo\nbar\nbaz\n'))
     def test_lint_command_not_found(self):
         with mock.patch('subprocess.check_output',
                         side_effect=OSError('Not found')) as check_output, \
