@@ -43,6 +43,7 @@ setup(
         # Packages specific to linters. They are optional, but to ease the use
         # we prefer to put them here.
         'html-linter',
+        'linguist',
         'template-remover',
         'docutils',
     ],

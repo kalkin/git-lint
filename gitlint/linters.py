@@ -21,6 +21,8 @@ import re
 import string
 import subprocess
 
+from linguist.libs.file_blob import FileBlob
+
 import gitlint.utils as utils
 
 
@@ -181,7 +183,16 @@ def lint(filename, lines, config):
       then a field 'skipped' will be set with the reasons. Otherwise, the field
       'comments' will have the messages.
     """
-    _, ext = os.path.splitext(filename)
+    lang = FileBlob(filename).language
+    if lang is None:
+        return {
+            filename: {
+                'skipped': ["no linter is defined or enabled for file '%s'" %
+                            filename]
+            }
+        }
+
+    ext = lang.primary_extension
     if ext in config:
         output = collections.defaultdict(list)
         for linter in config[ext]:
@@ -197,10 +208,10 @@ def lint(filename, lines, config):
         return {
             filename: dict(output)
         }
-    else:
-        return {
-            filename: {
-                'skipped': ['no linter is defined or enabled for files'
-                            ' with extension "%s"' % ext]
-            }
+
+    return {
+        filename: {
+            'skipped': ['no linter is defined or enabled for files'
+                        ' with extension "%s"' % ext]
         }
+    }
