@@ -12,9 +12,13 @@ python:
 # command to install dependencies
 install:
   - sudo apt-get install libicu-dev libmagic-dev
+  - "bash scripts/install-linters.sh"
+  - git clone https://github.com/kalkin/linguist
+  - cd linguist
+  - pip install .
+  - cd ..
   - "pip install ."
   - "pip install coveralls"
-  - "bash scripts/install-linters.sh"
 # command to run tests
 before_script:
   - export PATH=$PATH:$PWD/pmd-bin/bin:/usr/local/bin
