@@ -179,11 +179,17 @@ def lint(filename, lines, config):
       then a field 'skipped' will be set with the reasons. Otherwise, the field
       'comments' will have the messages.
     """
+
+    textchars = bytearray({7, 8, 9, 10, 12, 13, 27}
+                          | set(range(0x20, 0x100)) - {0x7f})
+    is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
+
     _, ext = os.path.splitext(filename)
     linters = []
     if 'extensions' in config and ext in config['extensions']:
         linters = config['extensions'][ext]
-    elif 'shellbangs' in config:
+    elif 'shellbangs' in config and not is_binary_string(
+            open(filename, 'rb').read(1024)):
         with open(filename, 'r') as f:
             first_line = f.readline()
             if first_line and 'shellbangs' in config:
