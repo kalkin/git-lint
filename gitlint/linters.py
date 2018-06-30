@@ -73,7 +73,7 @@ def lint_command(name, program, arguments, filter_regex, filename, lines):
 
     Returns: dict: a dict with the extracted info from the message.
     """
-    output = utils.get_output_from_cache(name, filename)
+    output = utils.get_output_from_cache(name, program, arguments, filename)
 
     if output is None:
         call_arguments = [program] + arguments + [filename]
@@ -91,7 +91,7 @@ def lint_command(name, program, arguments, filter_regex, filename, lines):
                 }
             }
         output = output.decode('utf-8')
-        utils.save_output_in_cache(name, filename, output)
+        utils.save_output_in_cache(name, program, arguments, filename, output)
 
     output_lines = output.split(os.linesep)
 
