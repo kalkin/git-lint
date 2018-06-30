@@ -24,10 +24,5 @@ script:
   - >
     yapf --parallel --recursive --diff . ||
     ( ! echo "Run yapf before committing (yapf -pri .)" )
-  - >
-    git reset --soft ${TRAVIS_COMMIT_RANGE%...*} &&
-    git status &&
-    git log | head -n 1 &&
-    git lint
 after_success:
   coveralls
