@@ -9,3 +9,4 @@ dist/
 experimental/
 .eggs/
 .DS_Store
+.mypy_cache/
