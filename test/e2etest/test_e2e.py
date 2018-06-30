@@ -167,7 +167,13 @@ class E2EMixin(object):
         """Add a test for each defined linter and extension."""
         for extension, linter_list in gitlint.get_config(None).items():
             for linter in linter_list:
-                cls.add_linter_check(linter.args[0], extension)
+                cmd = linter.args[0]
+
+                # FIXME Sometimes the cmd var is a list of one element
+                if not isinstance(cmd, str):
+                    cmd = linter.args[0][0]
+
+                cls.add_linter_check(cmd, extension)
 
 
 E2EMixin.add_linter_checks()
