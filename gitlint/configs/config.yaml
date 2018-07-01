@@ -137,6 +137,26 @@ pylint:
     )?(?P<message>.+)$
   installation: "Run pip install pylint."
 
+pep8:
+  extensions:
+    - .py
+  shellbang:
+    - /usr/bin/env python
+    - /usr/bin/env python2.7
+    - /usr/bin/env python3
+    - /usr/bin/python
+    - /usr/bin/python2
+    - /usr/bin/python2.7
+    - /usr/bin/python3
+  command: pep8
+  arguments:
+    - --max-line-length=80
+  filter: >-
+    ^{filename}:(?P<line>{lines}):((?P<column>\d+):)?
+    (?P<message_id>\S+)
+    (?P<message>.+)$
+  installation: Run pip install pep8.
+
 # Sample output:
 # package/module.py:68:80: E501 line too long (80 > 79 characters)
 pycodestyle:
