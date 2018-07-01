@@ -353,7 +353,7 @@ class LintersTest(unittest.TestCase):
 
     def test_lint_missing_programs(self):
         linter1 = functools.partial(linters.missing_requirements_command, 'l1',
-                                    ['p1', 'p2'], 'Install p1 and p2')
+                                    ['p1', 'p2'])
         config = {'.txt': [linter1]}
         output = linters.lint('foo.txt', lines=[4, 5], config=config)
         self.assertEqual(1, len(output['foo.txt']['skipped']))
@@ -362,8 +362,8 @@ class LintersTest(unittest.TestCase):
 
     def test_lint_two_missing_programs(self):
         linter1 = functools.partial(linters.missing_requirements_command, 'l1',
-                                    ['p1', 'p2'], 'Install p1 and p2')
-        config = {'.txt': [linter1, linter1]}
+                                    ['p1', 'p2'])
+        config = {'extensions': {'.txt': [linter1, linter1]}}
         output = linters.lint('foo.txt', lines=[4, 5], config=config)
         self.assertEqual(2, len(output['foo.txt']['skipped']))
         output['foo.txt']['skipped'] = []
