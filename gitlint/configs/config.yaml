@@ -280,6 +280,17 @@ yaml:
 
   installation: Run pip install yamllint.
 
+proselint:
+  extensions:
+    - .rst
+    - .md
+    - .txt
+  command: proselint
+  installation: "pip3 install --user proselint"
+  filter: >-
+    ^{filename}:(?P<line>\d+):(?P<column>\d+)\:
+    (?P<message_id>\S+) (?P<message>.+)$
+
 # INI
 ini:
   extensions:

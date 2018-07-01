@@ -53,7 +53,7 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo bash -
 sudo apt-get install nodejs --yes
 
 # Install python packages
-pip install closure-linter cpplint docutils html-linter pycodestyle pylint yamllint pep8
+pip install closure-linter cpplint docutils html-linter pycodestyle pylint yamllint pep8 proselint
 
 sudo npm install -g coffeelint csslint jshint
 
