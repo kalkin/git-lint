@@ -1,8 +1,10 @@
+#!/bin/sh
+
 set -x
 set -e
 
 root="$(git rev-parse --show-toplevel)"
-${root}/scripts/clean-linters.sh
+"${root}/scripts/clean-linters.sh"
 
 sudo apt-get update -qq
 sudo apt-get remove rubygems ruby --yes
@@ -69,7 +71,7 @@ cd tidy-html5/build/cmake
 cmake ../..
 make -j 4
 sudo make install
-cd -
+cd /tmp
 
 # PMD
 wget --no-check-certificate "https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.4.0/pmd-bin-6.4.0.zip"
