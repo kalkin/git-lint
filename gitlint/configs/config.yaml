@@ -223,6 +223,22 @@ bash:
     {filename}: line (?P<line>{lines}): (?P<message>.+)
   installation: Please install bash in your system.
 
+shellcheck:
+  extensions:
+    - .sh
+  shellbang:
+    - /bin/sh
+    - /bin/bash
+  arguments:
+    - --format=gcc
+  command: shellcheck
+  filter: >-
+        {filename}:(?P<line>\d+):(?P<column>\d+):
+        (?P<severity>.+):
+        (?P<message>.+)
+        \[(?P<message_id>.+)\]
+  installation: "Install shellcheck"
+
 # YAML
 yaml:
   extensions:
